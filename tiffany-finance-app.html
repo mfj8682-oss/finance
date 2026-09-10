@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tiffany Finance">
+<meta name="theme-color" content="#1E1C1A">
+<title>Tiffany Finance</title>
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231E1C1A'/><text y='.9em' font-size='75' x='12'>💰</text></svg>">
+<style>
+:root{
+  --ink:#1E1C1A;--mid:#6B6158;--muted:#A09488;--line:rgba(180,160,120,0.18);
+  --gold:#B8943E;--gl:#D4AF6A;--gp:#F5ECD4;
+  --cream:#F2EDE6;--white:#FDFAF6;
+  --green:#3D7A54;--greenp:#E8F2EC;
+  --red:#B83232;--redp:#FAEAEA;
+  --blue:#2E5F8A;--bluep:#E6EFF6;
+  --purple:#6B4E8A;--purp:#F0EBF6;
+  --teal:#2E7A7A;--tealp:#E6F2F2;
+  --orange:#C85A1E;--orangep:#FCEEE8;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overscroll-behavior:none;}
+body{background:var(--cream);color:var(--ink);font-family:'DM Mono',ui-monospace,monospace;padding-bottom:calc(68px + env(safe-area-inset-bottom));font-size:13px;}
+input,button{font-family:inherit;}
+
+/* HEADER */
+.hdr{background:var(--ink);padding:calc(44px + env(safe-area-inset-top)) 18px 16px;position:relative;overflow:hidden;}
+.hdr::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(184,148,62,0.2),transparent 65%);pointer-events:none;}
+.hdr-row{display:flex;justify-content:space-between;align-items:flex-start;}
+.hdr-title{font-family:Georgia,serif;font-size:22px;color:var(--gl);font-weight:400;}
+.hdr-sub{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:3px;}
+.month-btn{background:rgba(184,148,62,0.15);border:1px solid var(--gold);color:var(--gl);font-size:11px;padding:5px 12px;border-radius:20px;cursor:pointer;}
+
+/* BANNER */
+.banner{background:linear-gradient(135deg,#0f1a0f,#1a2a1a);padding:11px 18px;border-bottom:1px solid rgba(111,207,151,0.15);position:sticky;top:0;z-index:50;}
+.banner-row{display:flex;justify-content:space-between;align-items:center;}
+.banner-label{font-size:9px;color:rgba(255,255,255,0.4);letter-spacing:1.5px;text-transform:uppercase;}
+.banner-amt{font-family:Georgia,serif;font-size:28px;transition:color .3s;}
+.banner-amt.pos{color:#6fcf97;}.banner-amt.warn{color:#f2994a;}.banner-amt.neg{color:#eb5757;}
+.banner-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px;}
+.banner-bd{font-size:9px;color:rgba(255,255,255,0.35);line-height:1.7;}
+.save-btn{font-size:9px;padding:3px 10px;border-radius:12px;border:1px solid var(--gold);background:rgba(184,148,62,0.15);color:var(--gl);cursor:pointer;letter-spacing:.5px;}
+.save-btn.ok{border-color:#6fcf97;background:rgba(111,207,151,0.15);color:#6fcf97;}
+.save-btn.err{border-color:var(--red);background:rgba(184,50,50,0.15);color:#eb5757;}
+
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--ink);display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:100;border-top:1px solid rgba(255,255,255,0.06);}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0;border:none;background:transparent;cursor:pointer;color:var(--muted);font-size:9px;letter-spacing:.5px;}
+.nav-btn.on{color:var(--gl);}
+.nav-btn .icon{font-size:18px;}
+
+/* PANELS */
+.panel{display:none;padding:12px 15px;}
+.panel.on{display:block;}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:11px;}
+.sec-hdr{display:flex;align-items:center;gap:8px;margin-bottom:11px;padding-bottom:8px;border-bottom:1px solid var(--line);}
+.sec-title{font-family:Georgia,serif;font-size:15px;color:var(--ink);font-weight:400;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+
+/* INPUTS */
+.big-wrap{position:relative;margin-bottom:4px;}
+.big-pre{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-family:Georgia,serif;font-size:20px;pointer-events:none;}
+.big-input{width:100%;padding:10px 10px 10px 28px;font-family:Georgia,serif;font-size:26px;color:var(--ink);border:1.5px solid var(--line);border-radius:10px;background:var(--cream);outline:none;-webkit-appearance:none;}
+.big-input:focus{border-color:var(--gold);}
+.sm-label{font-size:10px;color:var(--mid);margin-bottom:4px;display:block;}
+.sm-input{width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--cream);font-family:Georgia,serif;font-size:17px;color:var(--ink);outline:none;-webkit-appearance:none;}
+.sm-input:focus{border-color:var(--gold);}
+.hint{font-size:9px;color:var(--muted);margin-top:4px;line-height:1.5;}
+.divider{height:1px;background:var(--line);margin:11px 0;}
+
+/* PILLS */
+.pills{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+.pill{padding:5px 12px;border-radius:20px;border:1.5px solid var(--line);background:transparent;font-size:10px;color:var(--mid);cursor:pointer;transition:all .2s;}
+.pill.on{background:var(--gold);border-color:var(--gold);color:white;}
+
+/* FLOW ROWS */
+.fr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);}
+.fr:last-child{border-bottom:none;}
+.fr-label{font-size:11px;color:var(--mid);}
+.fr-sub{font-size:9px;color:var(--muted);margin-top:1px;}
+.fr-amt{font-family:Georgia,serif;font-size:16px;}
+.fr-amt.neg{color:var(--red);}
+.fr-amt.pos{color:var(--green);}
+.fr-input-wrap{position:relative;width:120px;}
+.fr-pre{position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:12px;}
+.fr-input{width:100%;padding:6px 6px 6px 28px;border:1.5px solid var(--line);border-radius:10px;background:var(--cream);font-family:Georgia,serif;font-size:16px;outline:none;-webkit-appearance:none;text-align:right;}
+
+/* CHECKLIST */
+.ck-group{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin:11px 0 6px;}
+.ck{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--white);border:1px solid var(--line);border-radius:10px;margin-bottom:6px;cursor:pointer;position:relative;overflow:hidden;}
+.ck::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--line);}
+.ck.done{background:var(--greenp);border-color:rgba(61,122,84,0.2);}
+.ck.done::before{background:var(--green);}
+.ck-box{width:19px;height:19px;border-radius:5px;border:1.5px solid var(--muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:white;}
+.ck.done .ck-box{background:var(--green);border-color:var(--green);}
+.ck-tick{font-size:10px;color:white;display:none;}
+.ck.done .ck-tick{display:block;}
+.ck-info{flex:1;}
+.ck-name{font-size:11px;color:var(--ink);}
+.ck.done .ck-name{color:var(--green);text-decoration:line-through;text-decoration-color:rgba(61,122,84,0.4);}
+.ck-detail{font-size:9px;color:var(--muted);margin-top:1px;}
+.ck-amt{font-family:Georgia,serif;font-size:15px;color:var(--ink);flex-shrink:0;}
+.ck.done .ck-amt{color:var(--green);}
+
+/* TILES */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px;}
+.tile{border-radius:10px;padding:12px;}
+.tile-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;}
+.tile-val{font-family:Georgia,serif;font-size:19px;}
+
+/* TIP */
+.tip{border-left:3px solid var(--gold);border-radius:0 10px 10px 0;padding:9px 11px;font-size:11px;color:var(--ink);line-height:1.7;margin-bottom:9px;background:var(--gp);}
+.tip strong{color:var(--gold);}
+.tip.blue{background:var(--bluep);border-color:var(--blue);} .tip.blue strong{color:var(--blue);}
+.tip.green{background:var(--greenp);border-color:var(--green);} .tip.green strong{color:var(--green);}
+.tip.red{background:var(--redp);border-color:var(--red);} .tip.red strong{color:var(--red);}
+
+/* PROGRESS */
+.prog-hdr{display:flex;justify-content:space-between;margin-bottom:5px;}
+.prog-label{font-size:10px;color:var(--mid);}
+.prog-val{font-family:Georgia,serif;font-size:13px;}
+.prog-track{height:5px;background:var(--line);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;transition:width .5s;}
+.prog-meta{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);margin-top:3px;}
+.prog-eta{color:var(--gold);}
+
+/* GOAL CARD */
+.gc{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:9px;}
+.gc-hdr{display:flex;justify-content:space-between;margin-bottom:8px;}
+.gc-left{display:flex;align-items:center;gap:7px;}
+.gc-name{font-size:11px;color:var(--ink);font-weight:500;}
+.gc-sub{font-size:9px;color:var(--muted);margin-top:1px;}
+.gc-target{font-family:Georgia,serif;font-size:16px;color:var(--ink);text-align:right;}
+.gc-tl{font-size:9px;color:var(--muted);}
+.gc-track{height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-bottom:5px;}
+.gc-fill{height:100%;border-radius:2px;transition:width .5s;}
+.gc-foot{display:flex;justify-content:space-between;font-size:9px;color:var(--muted);}
+.gc-eta{color:var(--gold);}
+
+/* COUNTDOWN */
+.cdown{background:var(--ink);border-radius:14px;padding:14px 16px;margin-bottom:11px;display:flex;align-items:center;gap:14px;}
+.cdown-num{font-family:Georgia,serif;font-size:38px;color:var(--gl);line-height:1;}
+.cdown-label{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;}
+.cdown-sub{font-size:10px;color:rgba(255,255,255,0.4);margin-top:2px;}
+
+/* BIG EXPENSES */
+.exp-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+.exp-name{flex:1;padding:7px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--cream);font-size:12px;color:var(--ink);outline:none;-webkit-appearance:none;}
+.exp-amt-wrap{position:relative;width:110px;flex-shrink:0;}
+.exp-amt-pre{position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted);}
+.exp-amt{width:100%;padding:7px 7px 7px 18px;border:1.5px solid var(--line);border-radius:10px;background:var(--cream);font-family:Georgia,serif;font-size:16px;color:var(--ink);outline:none;-webkit-appearance:none;}
+.exp-del{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--line);background:transparent;color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.add-exp{width:100%;padding:9px;border-radius:10px;border:1.5px dashed var(--line);background:transparent;font-size:11px;color:var(--muted);cursor:pointer;margin-top:4px;}
+.exp-total{display:flex;justify-content:space-between;padding-top:10px;margin-top:6px;border-top:1px solid var(--line);}
+
+/* ASSET ROWS */
+.ar{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);}
+.ar:last-child{border-bottom:none;}
+.ar-label{font-size:11px;color:var(--mid);}
+.ar-sub{font-size:9px;color:var(--muted);margin-top:1px;}
+.ar-val{font-family:Georgia,serif;font-size:17px;text-align:right;}
+.ar-tag{font-size:9px;padding:2px 7px;border-radius:8px;display:inline-block;margin-top:2px;}
+
+/* HISTORY */
+.hr{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);}
+.hr:last-child{border-bottom:none;}
+.hr-month{font-size:10px;color:var(--mid);width:72px;flex-shrink:0;}
+.hr-income{font-family:Georgia,serif;font-size:15px;color:var(--ink);flex:1;}
+.hr-delta{font-size:9px;padding:2px 6px;border-radius:9px;}
+.hr-delta.up{background:var(--greenp);color:var(--green);}
+.hr-delta.dn{background:var(--redp);color:var(--red);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:flex-end;backdrop-filter:blur(4px);}
+.modal-overlay.show{display:flex;}
+.modal{background:var(--white);border-radius:20px 20px 0 0;padding:20px 16px calc(30px + env(safe-area-inset-bottom));width:100%;max-height:80vh;overflow-y:auto;}
+.modal h3{font-family:Georgia,serif;font-size:17px;color:var(--ink);margin-bottom:6px;font-weight:400;}
+.modal-note{font-size:9px;color:var(--muted);margin-bottom:12px;letter-spacing:.5px;}
+.modal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+.modal-btn{padding:9px 5px;border-radius:8px;border:1.5px solid var(--line);background:transparent;font-size:10px;color:var(--mid);cursor:pointer;text-align:center;}
+.modal-btn.active-month{border-color:rgba(61,122,84,0.4);color:var(--green);}
+.modal-btn.sel{background:var(--ink);border-color:var(--ink);color:var(--gl);}
+.modal-close{width:100%;margin-top:11px;padding:11px;border-radius:10px;border:none;background:var(--ink);color:var(--gl);font-size:11px;cursor:pointer;}
+
+.june-box{background:linear-gradient(135deg,#0f1a0f,#182318);border-radius:14px;padding:16px;margin-bottom:11px;}
+.june-box h3{font-family:Georgia,serif;font-size:14px;color:#6fcf97;margin-bottom:4px;font-weight:400;}
+.june-sub{font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:12px;line-height:1.6;}
+.june-label{font-size:10px;color:rgba(255,255,255,0.5);margin-bottom:4px;display:block;}
+.june-input{width:100%;padding:8px 8px 8px 20px;border:1.5px solid rgba(111,207,151,0.2);border-radius:10px;background:#1a2a1a;color:white;font-family:Georgia,serif;font-size:17px;outline:none;-webkit-appearance:none;margin-bottom:10px;}
+.june-total{display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);margin-top:4px;}
+.june-total-label{font-size:10px;color:rgba(255,255,255,0.4);}
+.june-total-val{font-family:Georgia,serif;font-size:22px;color:#6fcf97;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-row">
+    <div>
+      <div class="hdr-title">Tiffany's Finance</div>
+      <div class="hdr-sub">Tax Year 2026 / 27</div>
+    </div>
+    <button class="month-btn" onclick="openModal()" id="month-display">Jul 2026</button>
+  </div>
+</div>
+
+<!-- BANNER -->
+<div class="banner">
+  <div class="banner-row">
+    <div>
+      <div class="banner-label">CASH ISA 可動資金</div>
+      <div class="banner-amt pos" id="banner-avail">£0</div>
+    </div>
+    <div class="banner-right">
+      <div class="banner-bd" id="banner-bd">
+        <div id="bn-isa">ISA 累積 £0</div>
+        <div id="bn-tax">− 稅金預留 £0</div>
+        <div id="bn-tui">− 學費預留 £0</div>
+      </div>
+      <button class="save-btn" id="save-btn" onclick="manualSave()">💾 儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- PANELS -->
+
+<!-- ① THIS MONTH -->
+<div class="panel on" id="p-month">
+
+  <!-- PAST: Apr–May -->
+  <div id="sec-past" style="display:none">
+    <div class="tip blue"><strong>📋</strong> 4–5月只記錄收入。6月填快照，7月起完整追蹤。</div>
+    <div class="card">
+      <div class="sec-hdr"><span class="dot"></span><span class="sec-title">本月收入</span></div>
+      <div class="big-wrap">
+        <span class="big-pre" style="color:var(--gold)">£</span>
+        <input class="big-input" type="number" inputmode="decimal" placeholder="0" id="past-income" oninput="savePast()">
+      </div>
+      <div class="hint">僅做記錄用途</div>
+    </div>
+  </div>
+
+  <!-- JUNE -->
+  <div id="sec-june" style="display:none">
+    <div class="card">
+      <div class="sec-hdr"><span class="dot"></span><span class="sec-title">6月收入</span></div>
+      <div class="big-wrap">
+        <span class="big-pre" style="color:var(--gold)">£</span>
+        <input class="big-input" type="number" inputmode="decimal" placeholder="0" id="june-income" oninput="saveJune()">
+      </div>
+    </div>
+    <div class="june-box">
+      <h3>📸 6月底 Cash ISA 快照</h3>
+      <p class="june-sub">填入6月底 Cash ISA 實際總額，作為7月計算起點。</p>
+      <label class="june-label">Cash ISA 6月底總額</label>
+      <div style="position:relative"><span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#6fcf97;font-size:13px">£</span><input class="june-input" type="number" inputmode="decimal" placeholder="4035" id="snap-isa" oninput="saveJune()"></div>
+      <label class="june-label">其中：稅金預留</label>
+      <div style="position:relative"><span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#f2994a;font-size:13px">£</span><input class="june-input" style="border-color:rgba(242,153,74,0.2)" type="number" inputmode="decimal" placeholder="0" id="snap-tax" oninput="saveJune()"></div>
+      <label class="june-label">其中：學費預留</label>
+      <div style="position:relative"><span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);color:#bb86fc;font-size:13px">£</span><input class="june-input" style="border-color:rgba(187,134,252,0.2)" type="number" inputmode="decimal" placeholder="0" id="snap-tui" oninput="saveJune()"></div>
+      <div class="june-total">
+        <span class="june-total-label">7月可動起點</span>
+        <span class="june-total-val" id="snap-avail">£0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVE: Jul+ -->
+  <div id="sec-active" style="display:none">
+    <div class="card">
+      <div class="sec-hdr"><span class="dot"></span><span class="sec-title">本月收入</span></div>
+      <div class="big-wrap">
+        <span class="big-pre" style="color:var(--gold)">£</span>
+        <input class="big-input" type="number" inputmode="decimal" placeholder="0" id="income-val" oninput="calc()">
+      </div>
+      <div class="hint">稅前總收入</div>
+      <div class="divider"></div>
+      <div class="sm-label">給媽媽</div>
+      <div class="pills" id="mum-pills">
+        <button class="pill on" onclick="setMum(10,this)">10%</button>
+        <button class="pill" onclick="setMum(12,this)">12%</button>
+        <button class="pill" onclick="setMum(15,this)">15%</button>
+        <button class="pill" onclick="setMum(20,this)">20%</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-hdr"><span class="dot"></span><span class="sec-title">本月實際流向</span></div>
+      <div class="fr"><div class="fr-label">💕 轉給媽媽</div><div class="fr-amt neg" id="a-mum">−£0</div></div>
+      <div class="fr"><div class="fr-label">🏠 Joint Account<div class="fr-sub">水電帳單</div></div><div class="fr-amt neg">−£800</div></div>
+      <div class="fr" id="row-lloyds"><div><div class="fr-label">🏦 Lloyds 定存</div><div class="fr-sub" id="lloyds-sub">£400/月</div></div><div class="fr-amt neg" id="a-lloyds">−£400</div></div>
+      <div class="fr" id="row-zopa" style="display:none"><div class="fr-label">🏦 Zopa 定存<div class="fr-sub">Jul–Dec £300/月</div></div><div class="fr-amt neg">−£300</div></div>
+      <div class="fr">
+        <div class="fr-label">💳 信用卡月結</div>
+        <div class="fr-input-wrap">
+          <span class="fr-pre" style="color:var(--red)">−£</span>
+          <input class="fr-input" type="number" inputmode="decimal" placeholder="0" id="cc-spend" style="color:var(--red)" oninput="calc()">
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="fr" style="border:none;padding:5px 0">
+        <div><div class="fr-label" style="color:var(--ink);font-weight:500">➕ 建議存入 Cash ISA</div><div class="fr-sub">剩餘全部存入</div></div>
+        <div class="fr-amt pos" id="a-to-isa">£0</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="sec-hdr"><span class="dot"></span><span class="sec-title">Cash ISA 本月存入</span></div>
+      <div class="tip"><strong>💡</strong> 填入本月實際存入 ISA 的金額，以及其中稅金和學費各多少。</div>
+      <div class="sm-label">本月實際存入 Cash ISA</div>
+      <div class="big-wrap" style="margin-bottom:12px">
+        <span class="big-pre" style="color:var(--green)">£</span>
+        <input class="big-input" type="number" inputmode="decimal" placeholder="0" id="isa-in" style="font-size:22px;padding-left:28px;border-color:rgba(61,122,84,0.3)" oninput="calc()">
+      </div>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1">
+          <div class="sm-label">稅金預留（建議 £1,500）</div>
+          <div style="position:relative">
+            <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--teal)">£</span>
+            <input class="sm-input" type="number" inputmode="decimal" placeholder="1500" id="tax-this" style="padding-left:20px;border-color:rgba(46,122,122,0.4);color:var(--teal)" oninput="calc()">
+          </div>
+        </div>
+        <div style="flex:1">
+          <div class="sm-label">學費預留（建議 £1,500）</div>
+          <div style="position:relative">
+            <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--purple)">£</span>
+            <input class="sm-input" type="number" inputmode="decimal" placeholder="1500" id="tui-this" style="padding-left:20px;border-color:rgba(107,78,138,0.4);color:var(--purple)" oninput="calc()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Big expenses -->
+    <div class="card">
+      <div class="sec-hdr"><span class="dot"></span><span class="sec-title">本月大筆支出</span></div>
+      <div class="hint" style="margin-bottom:10px">稅款、service charge、旅遊等一次性支出 — 從可動資金扣除</div>
+      <div id="exp-list"></div>
+      <button class="add-exp" onclick="addExp()">＋ 新增支出項目</button>
+      <div class="exp-total" id="exp-total-row" style="display:none">
+        <span style="font-size:11px;color:var(--mid)">大筆支出合計</span>
+        <span style="font-family:Georgia,serif;font-size:18px;color:var(--red)" id="exp-total-amt">£0</span>
+      </div>
+    </div>
+
+    <div class="tiles">
+      <div class="tile" style="background:var(--gp)"><div class="tile-label" style="color:var(--gold)">月收入</div><div class="tile-val" id="s-income">£0</div></div>
+      <div class="tile" style="background:var(--greenp)"><div class="tile-label" style="color:var(--green)">存入 ISA</div><div class="tile-val" style="color:var(--green)" id="s-isa">£0</div></div>
+      <div class="tile" style="background:var(--tealp)"><div class="tile-label" style="color:var(--teal)">稅金預留</div><div class="tile-val" style="color:var(--teal)" id="s-tax">£0</div></div>
+      <div class="tile" style="background:var(--redp)"><div class="tile-label" style="color:var(--red)">大筆支出</div><div class="tile-val" style="color:var(--red)" id="s-big">£0</div></div>
+    </div>
+
+    <div class="tip red" id="warn-low" style="display:none"><strong>⚠️</strong> ISA 可動資金只剩 <span id="warn-amt"></span>，注意！</div>
+    <div class="tip green" id="warn-ok" style="display:none"><strong>✅</strong> ISA 可動資金充裕，繼續保持。</div>
+  </div>
+</div>
+
+<!-- ② CHECKLIST -->
+<div class="panel" id="p-check">
+  <div id="check-past" style="display:none">
+    <div class="tip blue"><strong>📋</strong> 7月起使用清單。請切換到7月或之後的月份。</div>
+  </div>
+  <div id="check-active" style="display:none">
+    <div class="cdown">
+      <div class="cdown-num" id="countdown">—</div>
+      <div>
+        <div class="cdown-label">學費倒數</div>
+        <div class="cdown-sub">個月後繳 £8,500（Jan 2027）</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-hdr"><span class="dot"></span><span class="sec-title">本月完成清單</span></div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:9px">打勾記錄本月完成的事項</div>
+      <div class="ck-group">發薪日立刻做</div>
+      <div class="ck" onclick="toggleCk('mum')" id="ck-mum"><div class="ck-box"><span class="ck-tick">✓</span></div><div class="ck-info"><div class="ck-name">💕 轉帳給媽媽</div><div class="ck-detail" id="ck-mum-detail">10%</div></div><div class="ck-amt" id="ck-mum-amt">£0</div></div>
+      <div class="ck" onclick="toggleCk('joint')" id="ck-joint"><div class="ck-box"><span class="ck-tick">✓</span></div><div class="ck-info"><div class="ck-name">🏠 Joint Account</div><div class="ck-detail">水電帳單</div></div><div class="ck-amt">£800</div></div>
+      <div class="ck" onclick="toggleCk('lloyds')" id="ck-lloyds"><div class="ck-box"><span class="ck-tick">✓</span></div><div class="ck-info"><div class="ck-name">🏦 Lloyds 定存</div><div class="ck-detail" id="ck-lloyds-detail">£400/月</div></div><div class="ck-amt" id="ck-lloyds-amt">£400</div></div>
+      <div class="ck" onclick="toggleCk('zopa')" id="ck-zopa" style="display:none"><div class="ck-box"><span class="ck-tick">✓</span></div><div class="ck-info"><div class="ck-name">🏦 Zopa 定存</div><div class="ck-detail">Jul–Dec £300/月</div></div><div class="ck-amt">£300</div></div>
+      <div class="ck-group">月底前</div>
+      <div class="ck" onclick="toggleCk('cc')" id="ck-cc"><div class="ck-box"><span class="ck-tick">✓</span></div><div class="ck-info"><div class="ck-name">💳 付信用卡月結</div><div class="ck-detail" id="ck-cc-detail">已在本月頁填入</div></div><div class="ck-amt" id="ck-cc-amt">£0</div></div>
+      <div class="ck" onclick="toggleCk('isa')" id="ck-isa"><div class="ck-box"><span class="ck-tick">✓</span></div><div class="ck-info"><div class="ck-name">💰 餘額存入 Cash ISA</div><div class="ck-detail">扣掉所有支出後全數存入</div></div><div class="ck-amt" id="ck-isa-amt">£0</div></div>
+      <div class="divider"></div>
+      <div class="prog-hdr"><span class="prog-label">完成進度</span><span class="prog-val" id="ck-progress">0 / 6</span></div>
+      <div class="prog-track"><div class="prog-fill" id="ck-bar" style="background:var(--green);width:0%"></div></div>
+    </div>
+    <div class="card">
+      <div class="sec-hdr"><span class="dot"></span><span class="sec-title">稅金罐累積進度</span></div>
+      <div class="prog-hdr"><span class="prog-label">累積稅金預留</span><span class="prog-val" id="tax-prog-val">£0 / £25,000</span></div>
+      <div class="prog-track"><div class="prog-fill" id="tax-prog" style="background:var(--teal);width:0%"></div></div>
+      <div class="prog-meta"><span id="tax-pct">0%</span><span class="prog-eta" id="tax-eta">累積中</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ ASSETS -->
+<div class="panel" id="p-goals">
+  <div class="card">
+    <div class="sec-hdr"><span class="dot"></span><span class="sec-title">Cash ISA 分析</span></div>
+    <div class="fr"><div class="fr-label">ISA 累積總額</div><div class="fr-amt" id="g-isa-total">£0</div></div>
+    <div class="fr"><div class="fr-label">− 稅金預留累積</div><div class="fr-amt neg" id="g-tax-total">£0</div></div>
+    <div class="fr"><div class="fr-label">− 學費預留累積</div><div class="fr-amt neg" id="g-tui-total">£0</div></div>
+    <div class="fr"><div class="fr-label">− 大筆支出（全部）</div><div class="fr-amt neg" id="g-big">£0</div></div>
+    <div class="divider"></div>
+    <div class="fr" style="border:none;padding:5px 0">
+      <div><div class="fr-label" style="color:var(--ink);font-weight:500">✅ 實際可動資金</div><div class="fr-sub">投資 + 享樂 + 彈性</div></div>
+      <div class="fr-amt pos" id="g-avail">£0</div>
+    </div>
+    <div style="background:var(--bluep);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:11px;color:var(--blue)">
+      <strong>📈 建議本月 Stock ISA 投入：</strong><span id="isa-suggest">—</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="sec-hdr"><span class="dot"></span><span class="sec-title">其他資產</span></div>
+    <div class="ar">
+      <div><div class="ar-label">🏦 Lloyds 定存</div><div class="ar-sub" id="lloyds-unlock">10月解綁</div></div>
+      <div><div class="ar-val" style="color:var(--muted)" id="g-lloyds">£3,500</div><div class="ar-tag" style="background:var(--orangep);color:var(--orange)">鎖定</div></div>
+    </div>
+    <div class="ar">
+      <div><div class="ar-label">📈 Stocks ISA</div><div class="ar-sub">長期投資，市值浮動</div></div>
+      <div><div class="ar-val" style="color:var(--blue)" id="g-stocks">£6,050</div><div class="ar-tag" style="background:var(--bluep);color:var(--blue)">投資</div></div>
+    </div>
+    <div class="divider"></div>
+    <div class="sm-label">📈 更新 Stocks ISA 市值</div>
+    <input class="sm-input" type="number" inputmode="decimal" placeholder="6050" id="stocks-val" style="margin-bottom:9px" oninput="updateAssets()">
+    <div class="sm-label">🏦 更新 Lloyds 餘額</div>
+    <input class="sm-input" type="number" inputmode="decimal" placeholder="3500" id="lloyds-val" style="margin-bottom:9px" oninput="updateAssets()">
+    <div class="sm-label">今年已用 ISA 總額度</div>
+    <input class="sm-input" type="number" inputmode="decimal" placeholder="0" id="isa-used" oninput="updateAssets()">
+    <div style="font-size:10px;color:var(--muted);margin-top:6px">ISA 年度剩餘：<span style="color:var(--gold);font-family:Georgia,serif;font-size:14px" id="isa-remaining">£20,000</span></div>
+  </div>
+
+  <div class="card">
+    <div class="sec-hdr"><span class="dot"></span><span class="sec-title">目標存款</span></div>
+    <div class="sm-label">👜 Bolide 存款</div>
+    <input class="sm-input" type="number" inputmode="decimal" placeholder="0" id="g-bolide" style="margin-bottom:9px" oninput="updateGoals()">
+    <div class="sm-label">🐾 Pet Hotel 基金</div>
+    <input class="sm-input" type="number" inputmode="decimal" placeholder="0" id="g-pethot" style="margin-bottom:9px" oninput="updateGoals()">
+    <div class="sm-label">🏠 Buy-to-Let 首付</div>
+    <input class="sm-input" type="number" inputmode="decimal" placeholder="0" id="g-btl" oninput="updateGoals()">
+  </div>
+
+  <div class="gc">
+    <div class="gc-hdr"><div class="gc-left"><span style="font-size:17px">🎓</span><div><div class="gc-name">學費 Jan+Apr 2027</div><div class="gc-sub">£17,000 total</div></div></div><div><div class="gc-target" id="gc-tui-target">£17,000</div><div class="gc-tl">目標</div></div></div>
+    <div class="gc-track"><div class="gc-fill" id="gf-tui" style="background:var(--purple)"></div></div>
+    <div class="gc-foot"><span id="gm-tui">£0 已預留</span><span class="gc-eta" id="ge-tui">每月存入</span></div>
+  </div>
+  <div class="gc">
+    <div class="gc-hdr"><div class="gc-left"><span style="font-size:17px">👜</span><div><div class="gc-name">Mini Bolide</div><div class="gc-sub">十一原則</div></div></div><div><div class="gc-target">£6,500</div><div class="gc-tl">目標</div></div></div>
+    <div class="gc-track"><div class="gc-fill" id="gf-bolide" style="background:var(--orange)"></div></div>
+    <div class="gc-foot"><span id="gm-bolide">£0 已存</span><span class="gc-eta" id="ge-bolide">累積中</span></div>
+  </div>
+  <div class="gc">
+    <div class="gc-hdr"><div class="gc-left"><span style="font-size:17px">🐾</span><div><div class="gc-name">Pet Hotel</div><div class="gc-sub">啟動資金</div></div></div><div><div class="gc-target">£50,000</div><div class="gc-tl">目標</div></div></div>
+    <div class="gc-track"><div class="gc-fill" id="gf-pethot" style="background:var(--green)"></div></div>
+    <div class="gc-foot"><span id="gm-pethot">£0 已存</span><span class="gc-eta" id="ge-pethot">長期</span></div>
+  </div>
+  <div class="gc">
+    <div class="gc-hdr"><div class="gc-left"><span style="font-size:17px">🏠</span><div><div class="gc-name">Buy-to-Let</div><div class="gc-sub">首付</div></div></div><div><div class="gc-target">£50,000</div><div class="gc-tl">目標</div></div></div>
+    <div class="gc-track"><div class="gc-fill" id="gf-btl" style="background:var(--blue)"></div></div>
+    <div class="gc-foot"><span id="gm-btl">£0 已存</span><span class="gc-eta" id="ge-btl">長期</span></div>
+  </div>
+</div>
+
+<!-- ④ HISTORY -->
+<div class="panel" id="p-history">
+  <div class="card">
+    <div class="sec-hdr"><span class="dot"></span><span class="sec-title">稅年收入記錄 2026/27</span></div>
+    <div id="history-list"><div style="font-size:11px;color:var(--muted);text-align:center;padding:18px 0">尚無記錄</div></div>
+    <div class="divider"></div>
+    <div style="display:flex;justify-content:space-between;padding-top:4px"><span style="font-size:11px;color:var(--mid)">稅年累積</span><span style="font-family:Georgia,serif;font-size:19px" id="yr-total">£0</span></div>
+    <div style="display:flex;justify-content:space-between;padding-top:8px"><span style="font-size:11px;color:var(--mid)">月均</span><span style="font-family:Georgia,serif;font-size:19px" id="yr-avg">£0</span></div>
+  </div>
+  <div class="card">
+    <div class="sec-hdr"><span class="dot"></span><span class="sec-title">本月 vs 上月</span></div>
+    <div id="compare"><div style="font-size:11px;color:var(--muted);text-align:center;padding:14px 0">輸入至少兩個月收入後顯示</div></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav class="nav">
+  <button class="nav-btn on" data-p="month" onclick="switchTab(this)"><span class="icon">📊</span>本月</button>
+  <button class="nav-btn" data-p="check" onclick="switchTab(this)"><span class="icon">✅</span>清單</button>
+  <button class="nav-btn" data-p="goals" onclick="switchTab(this)"><span class="icon">🎯</span>資產</button>
+  <button class="nav-btn" data-p="history" onclick="switchTab(this)"><span class="icon">📈</span>記錄</button>
+</nav>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>選擇月份</h3>
+    <div class="modal-note">APR–MAY 記錄 · JUN 快照 · JUL+ 完整追蹤</div>
+    <div class="modal-grid" id="modal-grid"></div>
+    <button class="modal-close" onclick="closeModal()">完成</button>
+  </div>
+</div>
+
+<script>
+const TM=[
+  {l:"Apr 2026",m:3,y:2026},{l:"May 2026",m:4,y:2026},{l:"Jun 2026",m:5,y:2026},
+  {l:"Jul 2026",m:6,y:2026},{l:"Aug 2026",m:7,y:2026},{l:"Sep 2026",m:8,y:2026},
+  {l:"Oct 2026",m:9,y:2026},{l:"Nov 2026",m:10,y:2026},{l:"Dec 2026",m:11,y:2026},
+  {l:"Jan 2027",m:0,y:2027},{l:"Feb 2027",m:1,y:2027},{l:"Mar 2027",m:2,y:2027}
+];
+const isPast=i=>i<=1, isJun=i=>i===2, isActive=i=>i>=3;
+const hasZopa=i=>i>=3&&i<=8;
+const getLloyds=i=>{
+  if(i>=3&&i<=5)return{amt:400,detail:"£400/月"};
+  if(i===6)return{amt:400,detail:"本月最後一次"};
+  return{amt:0,detail:"已解綁 ✅"};
+};
+
+const DEFAULTS={
+  curIdx:3, mumPct:10,
+  monthlyData:{},
+  snapshot:{isa:4035,taxRes:0,tuiRes:0},
+  assets:{stocks:6050,lloyds:3500,isaUsed:0},
+  goals:{bolide:0,pethot:0,btl:0}
+};
+
+let S=JSON.parse(JSON.stringify(DEFAULTS));
+
+// ── STORAGE: try multiple methods ──
+function saveData(){
+  const str=JSON.stringify(S);
+  // 1. localStorage
+  try{localStorage.setItem("tf-finance",str);}catch(e){}
+  // 2. sessionStorage as backup
+  try{sessionStorage.setItem("tf-finance",str);}catch(e){}
+  // 3. IndexedDB for persistence
+  try{
+    const req=indexedDB.open("TiffanyFinance",1);
+    req.onupgradeneeded=e=>e.target.result.createObjectStore("data");
+    req.onsuccess=e=>{
+      const db=e.target.result;
+      const tx=db.transaction("data","readwrite");
+      tx.objectStore("data").put(str,"state");
+    };
+  }catch(e){}
+}
+
+function loadData(cb){
+  // Try localStorage first
+  try{
+    const raw=localStorage.getItem("tf-finance");
+    if(raw){S={...DEFAULTS,...JSON.parse(raw)};cb();return;}
+  }catch(e){}
+  // Try IndexedDB
+  try{
+    const req=indexedDB.open("TiffanyFinance",1);
+    req.onupgradeneeded=e=>e.target.result.createObjectStore("data");
+    req.onsuccess=e=>{
+      const db=e.target.result;
+      const tx=db.transaction("data","readonly");
+      const get=tx.objectStore("data").get("state");
+      get.onsuccess=()=>{
+        if(get.result)try{S={...DEFAULTS,...JSON.parse(get.result)};}catch(e){}
+        cb();
+      };
+      get.onerror=()=>cb();
+    };
+    req.onerror=()=>cb();
+  }catch(e){cb();}
+}
+
+function manualSave(){
+  saveData();
+  const btn=document.getElementById("save-btn");
+  btn.textContent="✓ 已儲存";btn.className="save-btn ok";
+  setTimeout(()=>{btn.textContent="💾 儲存";btn.className="save-btn";},1500);
+}
+
+// ── HELPERS ──
+const fmt=n=>"£"+Math.round(Math.abs(n)).toLocaleString("en-GB");
+const fmtS=n=>(n>=0?"+":"−")+"£"+Math.round(Math.abs(n)).toLocaleString("en-GB");
+const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+const show=(id,v)=>{const e=document.getElementById(id);if(e)e.style.display=v?"":"none";};
+const setBar=(id,v,t)=>{const e=document.getElementById(id);if(e)e.style.width=Math.min(100,Math.max(0,t>0?v/t*100:0))+"%";};
+const getMD=i=>S.monthlyData[i]||(S.monthlyData[i]={income:0,checked:[],ccSpend:0,isaIn:0,taxThis:0,tuiThis:0,bigExp:[]});
+
+function getISACum(){
+  let isa=S.snapshot.isa||0,tax=S.snapshot.taxRes||0,tui=S.snapshot.tuiRes||0;
+  for(let i=3;i<=11;i++){const md=S.monthlyData[i]||{};isa+=(md.isaIn||0);tax+=(md.taxThis||0);tui+=(md.tuiThis||0);}
+  return{isa,tax,tui};
+}
+function getBigTotal(idx){return((S.monthlyData[idx]||{}).bigExp||[]).reduce((s,e)=>s+(parseFloat(e.amt)||0),0);}
+function getAllBig(){let t=0;for(let i=3;i<=11;i++)t+=getBigTotal(i);return t;}
+function getAvail(){const{isa,tax,tui}=getISACum();return{avail:isa-tax-tui-getAllBig(),isa,tax,tui};}
+function getCountdown(){const c=TM[S.curIdx];const now=new Date(c.y,c.m,1);const t=new Date(2027,0,1);return Math.max(0,(t.getFullYear()-now.getFullYear())*12+(t.getMonth()-now.getMonth()));}
+
+// ── BANNER ──
+function updateBanner(){
+  const{avail,isa,tax,tui}=getAvail();
+  const el=document.getElementById("banner-avail");
+  if(el){el.textContent=fmt(avail);el.className="banner-amt "+(avail>3000?"pos":avail>0?"warn":"neg");}
+  set("bn-isa","ISA 累積 "+fmt(isa));set("bn-tax","− 稅金預留 "+fmt(tax));set("bn-tui","− 學費預留 "+fmt(tui));
+  set("g-isa-total",fmt(isa));set("g-tax-total","−"+fmt(tax));set("g-tui-total","−"+fmt(tui));set("g-big","−"+fmt(getAllBig()));set("g-avail",fmt(avail));
+  const isaUsed=S.assets.isaUsed||0;
+  const suggest=Math.min(Math.max(0,20000-isaUsed),Math.min(2000,Math.round(avail*0.3)));
+  set("isa-suggest",avail>0?fmt(suggest)+"（可動的 30%）":"確認 ISA 餘額後顯示");
+  const taxT=25000;
+  setBar("tax-prog",tax,taxT);set("tax-prog-val",fmt(tax)+" / "+fmt(taxT));set("tax-pct",Math.round(tax/taxT*100)+"%");
+  set("tax-eta",tax>=taxT?"✅ 年度稅金備齊":"還差 "+fmt(taxT-tax));
+  setBar("gf-tui",tui,17000);set("gm-tui",fmt(tui)+" 已預留");
+  const tL=getCountdown();set("ge-tui",tL>0?"還差 "+fmt(Math.max(0,17000-tui))+" / "+tL+"個月":"⚡ 本月繳款");
+  show("warn-low",avail<1000&&isa>0);show("warn-ok",avail>=1000);
+  if(avail<1000&&isa>0){set("warn-amt",fmt(avail));}
+}
+
+// ── CALC ──
+function calc(){
+  const idx=S.curIdx;const md=getMD(idx);
+  md.income=parseFloat(document.getElementById("income-val")?.value)||0;
+  md.ccSpend=parseFloat(document.getElementById("cc-spend")?.value)||0;
+  md.isaIn=parseFloat(document.getElementById("isa-in")?.value)||0;
+  md.taxThis=parseFloat(document.getElementById("tax-this")?.value)||0;
+  md.tuiThis=parseFloat(document.getElementById("tui-this")?.value)||0;
+  saveData();
+  const ll=getLloyds(idx);
+  const mum=Math.round(md.income*S.mumPct/100);
+  const toISA=Math.max(0,md.income-mum-800-ll.amt-(hasZopa(idx)?300:0)-md.ccSpend);
+  set("a-mum","−"+fmt(mum));set("a-to-isa",fmt(toISA));
+  if(ll.amt>0){set("a-lloyds","−"+fmt(ll.amt));set("lloyds-sub",ll.detail);}
+  show("row-zopa",hasZopa(idx));show("ck-zopa",hasZopa(idx));
+  show("row-lloyds",ll.amt>0);show("ck-lloyds",ll.amt>0);
+  set("s-income",fmt(md.income));set("s-isa",fmt(md.isaIn));set("s-tax",fmt(md.taxThis));set("s-big",fmt(getBigTotal(idx)));
+  set("ck-mum-detail",S.mumPct+"% · "+fmt(mum));set("ck-mum-amt",fmt(mum));
+  set("ck-lloyds-detail",ll.detail);set("ck-lloyds-amt",fmt(ll.amt));
+  set("ck-cc-detail",md.ccSpend?fmt(md.ccSpend):"已在本月頁填入");set("ck-cc-amt",fmt(md.ccSpend||0));
+  set("ck-isa-amt",fmt(md.isaIn||toISA));
+  updateBanner();updateCkProgress();updateHistory();
+}
+
+function setMum(p,btn){
+  S.mumPct=p;saveData();
+  document.querySelectorAll(".pill").forEach(b=>b.classList.remove("on"));btn.classList.add("on");calc();
+}
+
+function savePast(){
+  const md=getMD(S.curIdx);md.income=parseFloat(document.getElementById("past-income")?.value)||0;saveData();updateHistory();
+}
+
+function saveJune(){
+  const md=getMD(S.curIdx);md.income=parseFloat(document.getElementById("june-income")?.value)||0;
+  S.snapshot.isa=parseFloat(document.getElementById("snap-isa")?.value)||0;
+  S.snapshot.taxRes=parseFloat(document.getElementById("snap-tax")?.value)||0;
+  S.snapshot.tuiRes=parseFloat(document.getElementById("snap-tui")?.value)||0;
+  saveData();
+  set("snap-avail",fmt(Math.max(0,S.snapshot.isa-S.snapshot.taxRes-S.snapshot.tuiRes)));
+  updateBanner();updateHistory();
+}
+
+// ── BIG EXPENSES ──
+function renderExp(){
+  const md=getMD(S.curIdx);const exps=md.bigExp||[];
+  const list=document.getElementById("exp-list");if(!list)return;
+  list.innerHTML=exps.map((e,i)=>`
+    <div class="exp-row">
+      <input class="exp-name" type="text" placeholder="支出名稱" value="${e.name||""}" oninput="updateExp(${i},'name',this.value)">
+      <div class="exp-amt-wrap"><span class="exp-amt-pre">£</span><input class="exp-amt" type="number" placeholder="0" value="${e.amt||""}" inputmode="decimal" oninput="updateExp(${i},'amt',this.value)"></div>
+      <button class="exp-del" onclick="delExp(${i})">×</button>
+    </div>`).join("");
+  const total=exps.reduce((s,e)=>s+(parseFloat(e.amt)||0),0);
+  show("exp-total-row",total>0);set("exp-total-amt","−"+fmt(total));set("s-big",fmt(total));updateBanner();
+}
+
+function addExp(){const md=getMD(S.curIdx);if(!md.bigExp)md.bigExp=[];md.bigExp.push({name:"",amt:0});saveData();renderExp();}
+function updateExp(i,f,v){const md=getMD(S.curIdx);if(!md.bigExp[i])return;md.bigExp[i][f]=f==="amt"?parseFloat(v)||0:v;saveData();renderExp();}
+function delExp(i){const md=getMD(S.curIdx);md.bigExp.splice(i,1);saveData();renderExp();}
+
+// ── CHECKLIST ──
+function toggleCk(key){
+  const md=getMD(S.curIdx);if(!md.checked)md.checked=[];
+  const i=md.checked.indexOf(key);
+  const el=document.getElementById("ck-"+key);
+  if(i>-1){md.checked.splice(i,1);el&&el.classList.remove("done");}
+  else{md.checked.push(key);el&&el.classList.add("done");}
+  saveData();updateCkProgress();
+}
+
+function updateCkProgress(){
+  const md=getMD(S.curIdx);const done=(md.checked||[]).length;
+  const total=4+(hasZopa(S.curIdx)?1:0)+(getLloyds(S.curIdx).amt>0?1:0);
+  set("ck-progress",done+" / "+total);setBar("ck-bar",done,total);
+}
+
+function restoreCk(){
+  const md=getMD(S.curIdx);const checked=md.checked||[];
+  ["mum","joint","lloyds","zopa","cc","isa"].forEach(k=>{
+    const el=document.getElementById("ck-"+k);
+    if(el){el.classList.toggle("done",checked.includes(k));}
+  });
+}
+
+// ── ASSETS / GOALS ──
+function updateAssets(){
+  S.assets.stocks=parseFloat(document.getElementById("stocks-val")?.value)||6050;
+  S.assets.lloyds=parseFloat(document.getElementById("lloyds-val")?.value)||3500;
+  S.assets.isaUsed=parseFloat(document.getElementById("isa-used")?.value)||0;
+  saveData();
+  set("g-stocks",fmt(S.assets.stocks));set("g-lloyds",fmt(S.assets.lloyds));
+  set("isa-remaining",fmt(Math.max(0,20000-S.assets.isaUsed)));
+  updateBanner();
+}
+
+function updateGoals(){
+  S.goals.bolide=parseFloat(document.getElementById("g-bolide")?.value)||0;
+  S.goals.pethot=parseFloat(document.getElementById("g-pethot")?.value)||0;
+  S.goals.btl=parseFloat(document.getElementById("g-btl")?.value)||0;
+  saveData();
+  const gc=(id,saved,target,eta)=>{
+    setBar("gf-"+id,saved,target);set("gm-"+id,fmt(saved)+" 已存");set("ge-"+id,saved>=target?"🎉 達標！":eta);
+  };
+  gc("bolide",S.goals.bolide,6500,"約 "+Math.ceil((6500-(S.goals.bolide||0))/1000)+" 個月");
+  gc("pethot",S.goals.pethot,50000,"約 "+Math.ceil((50000-(S.goals.pethot||0))/800)+" 個月");
+  gc("btl",S.goals.btl,50000,"約 "+Math.ceil((50000-(S.goals.btl||0))/800)+" 個月");
+}
+
+// ── COUNTDOWN ──
+function updateCountdown(){set("countdown",getCountdown());}
+
+// ── HISTORY ──
+function updateHistory(){
+  const list=document.getElementById("history-list");if(!list)return;
+  const entries=TM.map((tm,i)=>({idx:i,...tm,income:(S.monthlyData[i]||{}).income||0})).filter(e=>e.income>0);
+  if(!entries.length){list.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:18px 0">尚無記錄</div>';set("yr-total","£0");set("yr-avg","£0");return;}
+  let html="",total=0;
+  entries.forEach((e,i)=>{
+    total+=e.income;const prev=i>0?entries[i-1].income:null;
+    let delta="",dc="";
+    if(prev!==null){const d=e.income-prev;if(d>0){delta=fmtS(d);dc="up";}else if(d<0){delta=fmtS(d);dc="dn";}}
+    const cur=e.idx===S.curIdx;
+    html+=`<div class="hr" ${cur?'style="background:var(--gp);border-radius:8px;padding:8px;"':""}>
+      <div class="hr-month">${e.l}</div><div class="hr-income">${fmt(e.income)}</div>
+      ${delta?`<div class="hr-delta ${dc}">${delta}</div>`:""}
+    </div>`;
+  });
+  list.innerHTML=html;set("yr-total",fmt(total));set("yr-avg",fmt(total/entries.length));
+  const comp=document.getElementById("compare");
+  if(entries.length>=2){
+    const c=entries[entries.length-1],p=entries[entries.length-2],d=c.income-p.income;
+    comp.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:9px">
+      <div><div style="font-size:9px;color:var(--muted)">${p.l}</div><div style="font-family:Georgia,serif;font-size:20px">${fmt(p.income)}</div></div>
+      <div style="color:var(--muted)">→</div>
+      <div style="text-align:right"><div style="font-size:9px;color:var(--muted)">${c.l}</div><div style="font-family:Georgia,serif;font-size:20px">${fmt(c.income)}</div></div></div>
+      <div style="text-align:center;font-family:Georgia,serif;font-size:26px;color:${d>=0?"var(--green)":"var(--red)"}">${fmtS(d)}</div>
+      <div style="text-align:center;font-size:10px;color:var(--muted);margin-top:3px">${d>=0?"📈":"📉"} ${Math.abs(((d/p.income)*100).toFixed(1))}%</div>`;
+  }else{comp.innerHTML='<div style="font-size:11px;color:var(--muted);text-align:center;padding:14px 0">輸入至少兩個月收入後顯示</div>';}
+}
+
+// ── RENDER MONTH ──
+function renderMonth(){
+  const idx=S.curIdx;
+  show("sec-past",isPast(idx));show("sec-june",isJun(idx));show("sec-active",isActive(idx));
+  show("check-past",!isActive(idx));show("check-active",isActive(idx));
+
+  if(isPast(idx)){const md=getMD(idx);const e=document.getElementById("past-income");if(e)e.value=md.income||"";}
+  if(isJun(idx)){
+    const f=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||"";};
+    const md=getMD(idx);
+    f("june-income",md.income);f("snap-isa",S.snapshot.isa);f("snap-tax",S.snapshot.taxRes);f("snap-tui",S.snapshot.tuiRes);
+    set("snap-avail",fmt(Math.max(0,(S.snapshot.isa||0)-(S.snapshot.taxRes||0)-(S.snapshot.tuiRes||0))));
+  }
+  if(isActive(idx)){
+    const md=getMD(idx);
+    const f=(id,v)=>{const e=document.getElementById(id);if(e)e.value=v||"";};
+    f("income-val",md.income);f("cc-spend",md.ccSpend);f("isa-in",md.isaIn);f("tax-this",md.taxThis);f("tui-this",md.tuiThis);
+    // Restore mum pills
+    document.querySelectorAll(".pill").forEach(b=>b.classList.remove("on"));
+    document.querySelectorAll(".pill").forEach(b=>{if(b.textContent===S.mumPct+"%")b.classList.add("on");});
+    restoreCk();renderExp();calc();
+  }
+  updateCountdown();updateBanner();updateHistory();
+}
+
+// ── MODAL ──
+function openModal(){
+  document.getElementById("modal-grid").innerHTML=TM.map((m,i)=>
+    `<button class="modal-btn${isActive(i)?" active-month":""}${i===S.curIdx?" sel":""}" onclick="selectMonth(${i})">${m.l}</button>`
+  ).join("");
+  document.getElementById("modal").classList.add("show");
+}
+function closeModal(){document.getElementById("modal").classList.remove("show");}
+function selectMonth(i){S.curIdx=i;saveData();set("month-display",TM[i].l);closeModal();renderMonth();}
+
+// ── TABS ──
+function switchTab(btn){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("on"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");document.getElementById("p-"+btn.dataset.p).classList.add("on");
+}
+
+// ── RESTORE ASSET UI ──
+function restoreAssetUI(){
+  const f=(id,v)=>{const e=document.getElementById(id);if(e&&v)e.value=v;};
+  f("stocks-val",S.assets.stocks);f("lloyds-val",S.assets.lloyds);f("isa-used",S.assets.isaUsed);
+  f("g-bolide",S.goals.bolide);f("g-pethot",S.goals.pethot);f("g-btl",S.goals.btl);
+  set("g-stocks",fmt(S.assets.stocks||6050));set("g-lloyds",fmt(S.assets.lloyds||3500));
+  set("isa-remaining",fmt(Math.max(0,20000-(S.assets.isaUsed||0))));
+}
+
+// ── INIT ──
+loadData(()=>{
+  set("month-display",TM[S.curIdx].l);
+  restoreAssetUI();updateGoals();renderMonth();
+});
+</script>
+</body>
+</html>
